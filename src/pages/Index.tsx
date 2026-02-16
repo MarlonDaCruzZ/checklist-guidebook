@@ -4,38 +4,64 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { WhatsAppWidget } from "@/components/WhatsAppWidget";
 import { Link } from "react-router-dom";
-import { BookOpen, Zap, Settings, AlertTriangle, HelpCircle, History, ArrowRight, FileText, Video, Download } from "lucide-react";
+import { BookOpen, Zap, Settings, AlertTriangle, HelpCircle, History, ArrowRight, FileText, Video, Download, Monitor, Plug, MapPin, Smartphone, Clock } from "lucide-react";
 
 const categories = [
-  { title: "Guia Rápido", desc: "Comece em 5 minutos", icon: Zap, href: "/guia-rapido", color: "text-warning" },
-  { title: "Configurações", desc: "Checklists, campos e regras", icon: Settings, href: "/documentacao/configurar-checklist", color: "text-primary" },
+  { title: "Primeiros Passos", desc: "Comece em 5 minutos", icon: Zap, href: "/documentacao/primeiros-passos", color: "text-warning" },
+  { title: "Painel Administrativo", desc: "Vistorias, usuários e gestão", icon: Monitor, href: "/documentacao/painel-administrativo", color: "text-primary" },
+  { title: "Configurações", desc: "Questionários, campos, PDF e regras", icon: Settings, href: "/documentacao/configuracoes", color: "text-primary" },
+  { title: "Integração & API", desc: "Webhooks e automações", icon: Plug, href: "/documentacao/integracao", color: "text-info" },
+  { title: "Gestão de Pátios", desc: "Controle de entrada e saída", icon: MapPin, href: "/documentacao/patios", color: "text-success" },
   { title: "Troubleshooting", desc: "Resolva problemas comuns", icon: AlertTriangle, href: "/documentacao/troubleshooting", color: "text-destructive" },
   { title: "FAQ", desc: "Perguntas frequentes", icon: HelpCircle, href: "/faq", color: "text-info" },
-  { title: "Documentação", desc: "Índice completo", icon: BookOpen, href: "/documentacao", color: "text-muted-foreground" },
+  { title: "Aparelhos Homologados", desc: "Dispositivos recomendados", icon: Smartphone, href: "/documentacao/aparelhos-homologados", color: "text-muted-foreground" },
+  { title: "Atendimento e Suporte", desc: "Horários e SLA", icon: Clock, href: "/documentacao/atendimento", color: "text-warning" },
+  { title: "Documentação Completa", desc: "Índice de todos os artigos", icon: BookOpen, href: "/documentacao", color: "text-muted-foreground" },
   { title: "Changelog", desc: "Novidades e atualizações", icon: History, href: "/changelog", color: "text-success" },
 ];
 
 const popularArticles = [
   {
-    title: "Como criar um checklist novo",
-    summary: "Aprenda em 7 passos como criar, testar e publicar um checklist para sua equipe.",
-    category: "Configurações",
-    readTime: "8 min",
-    href: "/documentacao/configurar-checklist",
-  },
-  {
-    title: "Guia Rápido — 5 minutos para começar",
-    summary: "Tudo o que você precisa para iniciar com a plataforma VexSoft do zero.",
-    category: "Guia Rápido",
+    title: "Primeiros Passos com o VEXSOFT",
+    summary: "Configure sua conta, instale o app e comece a usar em 5 minutos.",
+    category: "Início",
     readTime: "5 min",
-    href: "/guia-rapido",
+    href: "/documentacao/primeiros-passos",
   },
   {
-    title: "Checklist não sincroniza — o que fazer?",
-    summary: "Causas comuns e soluções para problemas de sincronização no app.",
+    title: "Campos Personalizáveis — Guia Completo",
+    summary: "Texto, seleção, data, código de barras, nível e regras condicionais.",
+    category: "Configurações",
+    readTime: "6 min",
+    href: "/documentacao/campos-personalizaveis",
+  },
+  {
+    title: "Sincronização — Dúvidas e Soluções",
+    summary: "Entenda como funciona a sincronização e resolva problemas comuns.",
     category: "Troubleshooting",
     readTime: "4 min",
-    href: "/documentacao/troubleshooting",
+    href: "/documentacao/sincronizacao",
+  },
+  {
+    title: "Integração e API",
+    summary: "Webhooks, preenchimento automático e documentação da API.",
+    category: "Integração",
+    readTime: "5 min",
+    href: "/documentacao/integracao",
+  },
+  {
+    title: "Configurações do PDF",
+    summary: "Termo de aceite, cabeçalho, rodapé e proteção com senha.",
+    category: "Configurações",
+    readTime: "4 min",
+    href: "/documentacao/configuracao-pdf",
+  },
+  {
+    title: "Gestão de Pátios",
+    summary: "Controle de entrada e saída de veículos por pátio.",
+    category: "Recursos",
+    readTime: "4 min",
+    href: "/documentacao/patios",
   },
 ];
 
@@ -63,8 +89,26 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Quick Links */}
+      <section className="container py-8">
+        <div className="flex flex-wrap justify-center gap-3">
+          <Link to="/documentacao/primeiros-passos" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg gradient-primary text-primary-foreground font-medium text-sm">
+            <Zap className="h-4 w-4" /> Começar aqui
+          </Link>
+          <Link to="/documentacao/configuracoes" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-foreground font-medium text-sm hover:bg-muted transition-colors">
+            <Settings className="h-4 w-4" /> Configurar checklist
+          </Link>
+          <Link to="/documentacao/integracao" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-foreground font-medium text-sm hover:bg-muted transition-colors">
+            <Plug className="h-4 w-4" /> API & Integrações
+          </Link>
+          <Link to="/faq" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-foreground font-medium text-sm hover:bg-muted transition-colors">
+            <HelpCircle className="h-4 w-4" /> Perguntas frequentes
+          </Link>
+        </div>
+      </section>
+
       {/* Categories */}
-      <section className="container py-14">
+      <section className="container py-8">
         <h2 className="text-xl font-bold mb-6">Explorar por categoria</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {categories.map((cat) => {
