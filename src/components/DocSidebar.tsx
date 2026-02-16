@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { ChevronRight, ChevronDown, BookOpen, Zap, Settings, AlertTriangle, HelpCircle, History } from "lucide-react";
+import { ChevronRight, ChevronDown, BookOpen, Zap, Settings, AlertTriangle, HelpCircle, History, Monitor, Eye, MapPin, Plug, Smartphone, Clock, Ban, FileText, Users as UsersIcon } from "lucide-react";
 import { useState } from "react";
 
 interface SidebarSection {
@@ -14,31 +14,63 @@ const sections: SidebarSection[] = [
     icon: BookOpen,
     links: [
       { label: "Visão Geral", href: "/documentacao" },
+      { label: "Boas-vindas", href: "/documentacao/boas-vindas" },
+      { label: "Nossa História", href: "/documentacao/historia" },
     ],
   },
   {
-    title: "Guia Rápido",
+    title: "Primeiros Passos",
     icon: Zap,
     links: [
-      { label: "5 minutos para começar", href: "/guia-rapido" },
+      { label: "Começar aqui", href: "/documentacao/primeiros-passos" },
+      { label: "Guia Rápido (5 min)", href: "/guia-rapido" },
+      { label: "Aparelhos Homologados", href: "/documentacao/aparelhos-homologados" },
+    ],
+  },
+  {
+    title: "Painel Administrativo",
+    icon: Monitor,
+    links: [
+      { label: "Visão Geral do Painel", href: "/documentacao/painel-administrativo" },
+      { label: "Vistorias", href: "/documentacao/vistorias" },
+      { label: "Usuários e Permissões", href: "/documentacao/usuarios" },
+      { label: "Área do Vistoriador", href: "/documentacao/area-do-vistoriador" },
     ],
   },
   {
     title: "Configurações",
     icon: Settings,
     links: [
-      { label: "Criar Checklist", href: "/documentacao/configurar-checklist" },
-      { label: "Campos e Validações", href: "/documentacao/configurar-checklist#campos" },
-      { label: "Regras Condicionais", href: "/documentacao/configurar-checklist#regras" },
-      { label: "Assinatura e Aceite", href: "/documentacao/configurar-checklist#assinatura" },
-      { label: "Publicar e Testar", href: "/documentacao/configurar-checklist#publicar" },
+      { label: "Visão Geral", href: "/documentacao/configuracoes" },
+      { label: "Tipos de Operação", href: "/documentacao/tipos-de-operacao" },
+      { label: "Questionário", href: "/documentacao/questionario" },
+      { label: "Campos Fixos", href: "/documentacao/campos-fixos" },
+      { label: "Campos Personalizáveis", href: "/documentacao/campos-personalizaveis" },
+      { label: "Configuração do PDF", href: "/documentacao/configuracao-pdf" },
+      { label: "Criar Checklist (Tutorial)", href: "/documentacao/configurar-checklist" },
+    ],
+  },
+  {
+    title: "Gestão de Pátios",
+    icon: MapPin,
+    links: [
+      { label: "Gestão de Pátios", href: "/documentacao/patios" },
+    ],
+  },
+  {
+    title: "Integração & API",
+    icon: Plug,
+    links: [
+      { label: "Integração", href: "/documentacao/integracao" },
     ],
   },
   {
     title: "Solução de Problemas",
     icon: AlertTriangle,
     links: [
-      { label: "Problemas Comuns", href: "/documentacao/troubleshooting" },
+      { label: "Troubleshooting", href: "/documentacao/troubleshooting" },
+      { label: "Sincronização", href: "/documentacao/sincronizacao" },
+      { label: "Limitações do App", href: "/documentacao/limitacoes" },
     ],
   },
   {
@@ -46,6 +78,13 @@ const sections: SidebarSection[] = [
     icon: HelpCircle,
     links: [
       { label: "Perguntas Frequentes", href: "/faq" },
+    ],
+  },
+  {
+    title: "Suporte",
+    icon: Clock,
+    links: [
+      { label: "Atendimento e SLA", href: "/documentacao/atendimento" },
     ],
   },
   {
@@ -86,7 +125,7 @@ export function DocSidebar() {
 
   return (
     <aside className="w-64 shrink-0 hidden lg:block">
-      <nav className="sticky top-20 space-y-1 pr-4">
+      <nav className="sticky top-20 space-y-1 pr-4 max-h-[calc(100vh-6rem)] overflow-y-auto">
         {sections.map((section) => {
           const Icon = section.icon;
           const isOpen = openSections.has(section.title);

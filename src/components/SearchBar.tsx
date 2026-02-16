@@ -3,17 +3,33 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const searchData = [
-  { title: "Como criar um checklist novo", url: "/documentacao/configurar-checklist", category: "Configurações" },
+  { title: "Boas-vindas ao VEXSOFT", url: "/documentacao/boas-vindas", category: "Início" },
+  { title: "Primeiros Passos", url: "/documentacao/primeiros-passos", category: "Início" },
   { title: "Guia Rápido — 5 minutos para começar", url: "/guia-rapido", category: "Guia Rápido" },
-  { title: "Checklist não sincroniza", url: "/documentacao/troubleshooting", category: "Troubleshooting" },
-  { title: "Fotos não carregam no app", url: "/documentacao/troubleshooting", category: "Troubleshooting" },
-  { title: "Campos obrigatórios não aparecem", url: "/documentacao/troubleshooting", category: "Troubleshooting" },
-  { title: "Adicionar campos ao checklist", url: "/documentacao/configurar-checklist", category: "Configurações" },
-  { title: "Regras de exibição condicional", url: "/documentacao/configurar-checklist", category: "Configurações" },
-  { title: "Assinatura digital e termos de aceite", url: "/documentacao/configurar-checklist", category: "Configurações" },
-  { title: "Modo offline e sincronização", url: "/documentacao/configurar-checklist", category: "Configurações" },
+  { title: "Painel Administrativo", url: "/documentacao/painel-administrativo", category: "Painel" },
+  { title: "Tela de Vistorias", url: "/documentacao/vistorias", category: "Painel" },
+  { title: "Usuários e Permissões", url: "/documentacao/usuarios", category: "Painel" },
+  { title: "Área do Vistoriador", url: "/documentacao/area-do-vistoriador", category: "Painel" },
+  { title: "Configurações do sistema", url: "/documentacao/configuracoes", category: "Configurações" },
+  { title: "Tipos de Operação", url: "/documentacao/tipos-de-operacao", category: "Configurações" },
+  { title: "Questionário", url: "/documentacao/questionario", category: "Configurações" },
+  { title: "Campos Fixos", url: "/documentacao/campos-fixos", category: "Configurações" },
+  { title: "Campos Personalizáveis", url: "/documentacao/campos-personalizaveis", category: "Configurações" },
+  { title: "Regras condicionais", url: "/documentacao/campos-personalizaveis#regras", category: "Configurações" },
+  { title: "Configuração do PDF", url: "/documentacao/configuracao-pdf", category: "Configurações" },
+  { title: "Termo de aceite e assinatura", url: "/documentacao/configuracao-pdf#assinatura", category: "Configurações" },
+  { title: "Como criar um checklist novo", url: "/documentacao/configurar-checklist", category: "Tutorial" },
+  { title: "Integração e API", url: "/documentacao/integracao", category: "Integração" },
+  { title: "Webhooks de nova vistoria", url: "/documentacao/integracao", category: "Integração" },
+  { title: "Sincronização — dúvidas e problemas", url: "/documentacao/sincronizacao", category: "Troubleshooting" },
+  { title: "Troubleshooting geral", url: "/documentacao/troubleshooting", category: "Troubleshooting" },
+  { title: "Limitações do aplicativo VEX", url: "/documentacao/limitacoes", category: "Troubleshooting" },
+  { title: "Gestão de Pátios", url: "/documentacao/patios", category: "Recursos" },
+  { title: "Aparelhos homologados", url: "/documentacao/aparelhos-homologados", category: "Recursos" },
+  { title: "Atendimento e suporte (SLA)", url: "/documentacao/atendimento", category: "Suporte" },
+  { title: "Nossa História", url: "/documentacao/historia", category: "Sobre" },
   { title: "Perguntas frequentes", url: "/faq", category: "FAQ" },
-  { title: "Atualizações e versões", url: "/changelog", category: "Changelog" },
+  { title: "Changelog e atualizações", url: "/changelog", category: "Changelog" },
 ];
 
 interface SearchBarProps {
@@ -31,7 +47,7 @@ export function SearchBar({ large = false, className = "" }: SearchBarProps) {
     ? searchData.filter((item) =>
         item.title.toLowerCase().includes(query.toLowerCase()) ||
         item.category.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 6)
+      ).slice(0, 8)
     : [];
 
   useEffect(() => {
