@@ -32,6 +32,7 @@ const Usuarios = lazy(() => import("./pages/Usuarios"));
 const TiposOperacao = lazy(() => import("./pages/TiposOperacao"));
 const Questionario = lazy(() => import("./pages/Questionario"));
 const CamposFixos = lazy(() => import("./pages/CamposFixos"));
+const Login = lazy(() => import("./pages/Login"));
 
 const queryClient = new QueryClient();
 
