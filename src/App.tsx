@@ -32,6 +32,7 @@ const Usuarios = lazy(() => import("./pages/Usuarios"));
 const TiposOperacao = lazy(() => import("./pages/TiposOperacao"));
 const Questionario = lazy(() => import("./pages/Questionario"));
 const CamposFixos = lazy(() => import("./pages/CamposFixos"));
+const Login = lazy(() => import("./pages/Login"));
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>}>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/documentacao" element={<Documentacao />} />
             <Route path="/guia-rapido" element={<GuiaRapido />} />
             <Route path="/documentacao/configurar-checklist" element={<ConfigurarChecklist />} />
