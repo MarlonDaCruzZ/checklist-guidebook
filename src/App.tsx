@@ -2,10 +2,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
 
 const Documentacao = lazy(() => import("./pages/Documentacao"));
 const GuiaRapido = lazy(() => import("./pages/GuiaRapido"));
@@ -36,9 +38,18 @@ const Login = lazy(() => import("./pages/Login"));
 
 const queryClient = new QueryClient();
 
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+<<<<<<< HEAD
       <Toaster />
       <Sonner />
       <BrowserRouter>
@@ -75,6 +86,46 @@ const App = () => (
           </Routes>
         </Suspense>
       </BrowserRouter>
+=======
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>}>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+              <Route path="/documentacao" element={<ProtectedRoute><Documentacao /></ProtectedRoute>} />
+              <Route path="/guia-rapido" element={<ProtectedRoute><GuiaRapido /></ProtectedRoute>} />
+              <Route path="/documentacao/configurar-checklist" element={<ProtectedRoute><ConfigurarChecklist /></ProtectedRoute>} />
+              <Route path="/documentacao/troubleshooting" element={<ProtectedRoute><Troubleshooting /></ProtectedRoute>} />
+              <Route path="/faq" element={<ProtectedRoute><FAQ /></ProtectedRoute>} />
+              <Route path="/changelog" element={<ProtectedRoute><Changelog /></ProtectedRoute>} />
+              <Route path="/documentacao/boas-vindas" element={<ProtectedRoute><BoasVindas /></ProtectedRoute>} />
+              <Route path="/documentacao/primeiros-passos" element={<ProtectedRoute><PrimeirosPassos /></ProtectedRoute>} />
+              <Route path="/documentacao/painel-administrativo" element={<ProtectedRoute><PainelAdministrativo /></ProtectedRoute>} />
+              <Route path="/documentacao/vistorias" element={<ProtectedRoute><Vistorias /></ProtectedRoute>} />
+              <Route path="/documentacao/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
+              <Route path="/documentacao/campos-personalizaveis" element={<ProtectedRoute><CamposPersonalizaveis /></ProtectedRoute>} />
+              <Route path="/documentacao/configuracao-pdf" element={<ProtectedRoute><ConfiguracaoPDF /></ProtectedRoute>} />
+              <Route path="/documentacao/integracao" element={<ProtectedRoute><Integracao /></ProtectedRoute>} />
+              <Route path="/documentacao/sincronizacao" element={<ProtectedRoute><Sincronizacao /></ProtectedRoute>} />
+              <Route path="/documentacao/patios" element={<ProtectedRoute><Patios /></ProtectedRoute>} />
+              <Route path="/documentacao/limitacoes" element={<ProtectedRoute><Limitacoes /></ProtectedRoute>} />
+              <Route path="/documentacao/aparelhos-homologados" element={<ProtectedRoute><AparelhosHomologados /></ProtectedRoute>} />
+              <Route path="/documentacao/atendimento" element={<ProtectedRoute><Atendimento /></ProtectedRoute>} />
+              <Route path="/documentacao/historia" element={<ProtectedRoute><Historia /></ProtectedRoute>} />
+              <Route path="/documentacao/area-do-vistoriador" element={<ProtectedRoute><AreaVistoriador /></ProtectedRoute>} />
+              <Route path="/documentacao/usuarios" element={<ProtectedRoute><Usuarios /></ProtectedRoute>} />
+              <Route path="/documentacao/tipos-de-operacao" element={<ProtectedRoute><TiposOperacao /></ProtectedRoute>} />
+              <Route path="/documentacao/questionario" element={<ProtectedRoute><Questionario /></ProtectedRoute>} />
+              <Route path="/documentacao/campos-fixos" element={<ProtectedRoute><CamposFixos /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </AuthProvider>
+>>>>>>> 7ba8fc0 (Login com as credencias do vex)
     </TooltipProvider>
   </QueryClientProvider>
 );

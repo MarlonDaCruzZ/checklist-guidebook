@@ -1,7 +1,8 @@
-import { Link, useLocation } from "react-router-dom";
-import { Search, Menu, X } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Search, Menu, X, LogOut, User } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { label: "Início", href: "/" },
@@ -14,6 +15,13 @@ const navLinks = [
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
@@ -56,11 +64,24 @@ export function Header() {
               ⌘K
             </kbd>
           </Link>
-          <Link to="https://app.vexsoft.com.br/" target="_blank">
-            <Button variant="outline" size="sm" className="hidden sm:inline-flex">
-              Entrar
-            </Button>
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <span className="hidden sm:inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+                <User className="h-4 w-4" />
+                {user?.nome || user?.email || "Usuario"}
+              </span>
+              <Button variant="outline" size="sm" className="hidden sm:inline-flex gap-1.5" onClick={handleLogout}>
+                <LogOut className="h-3.5 w-3.5" />
+                Sair
+              </Button>
+            </>
+          ) : (
+            <Link to="/login">
+              <Button variant="outline" size="sm" className="hidden sm:inline-flex">
+                Entrar
+              </Button>
+            </Link>
+          )}
           <Link to="https://wa.me/message/3MPLPHHHKVZSP1" target="_blank">
             <Button size="sm" className="gradient-primary text-primary-foreground border-0 hidden sm:inline-flex">
               Agendar Demonstração
@@ -94,9 +115,16 @@ export function Header() {
               </Link>
             ))}
             <div className="flex gap-2 mt-3 pt-3 border-t border-border">
-              <Link to="https://app.vexsoft.com.br/" target="_blank" className="flex-1">
-                <Button variant="outline" size="sm" className="w-full">Entrar</Button>
-              </Link>
+              {isAuthenticated ? (
+                <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => { handleLogout(); setMobileOpen(false); }}>
+                  <LogOut className="h-3.5 w-3.5" />
+                  Sair
+                </Button>
+              ) : (
+                <Link to="/login" className="flex-1" onClick={() => setMobileOpen(false)}>
+                  <Button variant="outline" size="sm" className="w-full">Entrar</Button>
+                </Link>
+              )}
               <Link to="https://wa.me/message/3MPLPHHHKVZSP1" target="_blank" className="flex-1">
                 <Button size="sm" className="w-full gradient-primary text-primary-foreground border-0">
                   Demonstração
