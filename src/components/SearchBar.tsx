@@ -1,8 +1,11 @@
 import { Search } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useBuscaArtigos } from "@/hooks/useDocs";
 
-const searchData = [
+// Índice estático de fallback — usado enquanto o login/conteúdo do Supabase
+// ainda não está disponível, mantendo a busca funcional no site atual.
+const searchDataFallback = [
   { title: "Boas-vindas ao VEXSOFT", url: "/documentacao/boas-vindas", category: "Início" },
   { title: "Primeiros Passos", url: "/documentacao/primeiros-passos", category: "Início" },
   { title: "Guia Rápido — 5 minutos para começar", url: "/guia-rapido", category: "Guia Rápido" },
@@ -15,12 +18,9 @@ const searchData = [
   { title: "Questionário", url: "/documentacao/questionario", category: "Configurações" },
   { title: "Campos Fixos", url: "/documentacao/campos-fixos", category: "Configurações" },
   { title: "Campos Personalizáveis", url: "/documentacao/campos-personalizaveis", category: "Configurações" },
-  { title: "Regras condicionais", url: "/documentacao/campos-personalizaveis#regras", category: "Configurações" },
   { title: "Configuração do PDF", url: "/documentacao/configuracao-pdf", category: "Configurações" },
-  { title: "Termo de aceite e assinatura", url: "/documentacao/configuracao-pdf#assinatura", category: "Configurações" },
   { title: "Como criar um checklist novo", url: "/documentacao/configurar-checklist", category: "Tutorial" },
   { title: "Integração e API", url: "/documentacao/integracao", category: "Integração" },
-  { title: "Webhooks de nova vistoria", url: "/documentacao/integracao", category: "Integração" },
   { title: "Sincronização — dúvidas e problemas", url: "/documentacao/sincronizacao", category: "Troubleshooting" },
   { title: "Troubleshooting geral", url: "/documentacao/troubleshooting", category: "Troubleshooting" },
   { title: "Limitações do aplicativo VEX", url: "/documentacao/limitacoes", category: "Troubleshooting" },
@@ -31,6 +31,12 @@ const searchData = [
   { title: "Perguntas frequentes", url: "/faq", category: "FAQ" },
   { title: "Changelog e atualizações", url: "/changelog", category: "Changelog" },
 ];
+
+interface SearchResult {
+  title: string;
+  url: string;
+  category: string;
+}
 
 interface SearchBarProps {
   large?: boolean;
@@ -43,12 +49,27 @@ export function SearchBar({ large = false, className = "" }: SearchBarProps) {
   const ref = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  const results = query.length > 1
-    ? searchData.filter((item) =>
-        item.title.toLowerCase().includes(query.toLowerCase()) ||
-        item.category.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 8)
-    : [];
+  // Busca real no Supabase (full-text). Se vazia/erro, cai no índice estático.
+  const { data: apiResults } = useBuscaArtigos(query);
+
+  let results: SearchResult[] = [];
+  if (query.length > 1) {
+    if (apiResults && apiResults.length > 0) {
+      results = apiResults.slice(0, 8).map((r) => ({
+        title: r.titulo,
+        url: `/doc/${r.slug}`,
+        category: r.categoria,
+      }));
+    } else {
+      results = searchDataFallback
+        .filter(
+          (item) =>
+            item.title.toLowerCase().includes(query.toLowerCase()) ||
+            item.category.toLowerCase().includes(query.toLowerCase())
+        )
+        .slice(0, 8);
+    }
+  }
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {

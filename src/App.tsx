@@ -34,6 +34,7 @@ const TiposOperacao = lazy(() => import("./pages/TiposOperacao"));
 const Questionario = lazy(() => import("./pages/Questionario"));
 const CamposFixos = lazy(() => import("./pages/CamposFixos"));
 const Login = lazy(() => import("./pages/Login"));
+const Artigo = lazy(() => import("./pages/Artigo"));
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/documentacao" element={<ProtectedRoute><Documentacao /></ProtectedRoute>} />
+              <Route path="/doc/:slug" element={<ProtectedRoute><Artigo /></ProtectedRoute>} />
               <Route path="/guia-rapido" element={<ProtectedRoute><GuiaRapido /></ProtectedRoute>} />
               <Route path="/documentacao/configurar-checklist" element={<ProtectedRoute><ConfigurarChecklist /></ProtectedRoute>} />
               <Route path="/documentacao/troubleshooting" element={<ProtectedRoute><Troubleshooting /></ProtectedRoute>} />
