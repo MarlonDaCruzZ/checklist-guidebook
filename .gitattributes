@@ -1,0 +1,17 @@
+# Normaliza fim de linha: tudo que é texto vira LF no repositório.
+# Acaba com o churn de CRLF<->LF causado pela sincronização do OneDrive/Windows.
+* text=auto eol=lf
+
+# Arquivos binários: nunca normalizar.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.woff  binary
+*.woff2 binary
+*.ttf  binary
+*.eot  binary
+*.lockb binary
+bun.lockb binary
