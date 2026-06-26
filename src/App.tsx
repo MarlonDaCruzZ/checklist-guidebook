@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -35,15 +36,25 @@ const Questionario = lazy(() => import("./pages/Questionario"));
 const CamposFixos = lazy(() => import("./pages/CamposFixos"));
 const Login = lazy(() => import("./pages/Login"));
 const Artigo = lazy(() => import("./pages/Artigo"));
+const LoginEquipe = lazy(() => import("./pages/LoginEquipe"));
 
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+  const { isAuthenticated } = useAuth();        // login VexSoft (clientes)
+  const { session, loading } = useSupabaseSession(); // login interno @inovaclick.com.br
+
+  // Acesso liberado com qualquer um dos dois logins.
+  if (isAuthenticated) return <>{children}</>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
   }
-  return <>{children}</>;
+  if (session) return <>{children}</>;
+  return <Navigate to="/login" replace />;
 }
 
 const App = () => (
@@ -56,6 +67,7 @@ const App = () => (
           <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>}>
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/login-equipe" element={<LoginEquipe />} />
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/documentacao" element={<ProtectedRoute><Documentacao /></ProtectedRoute>} />
               <Route path="/doc/:slug" element={<ProtectedRoute><Artigo /></ProtectedRoute>} />
