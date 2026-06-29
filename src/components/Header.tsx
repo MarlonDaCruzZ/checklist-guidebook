@@ -1,8 +1,9 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, Menu, X, LogOut, User } from "lucide-react";
+import { Search, Menu, X, LogOut, User, Settings } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 
 const navLinks = [
   { label: "Início", href: "/" },
@@ -17,6 +18,11 @@ export function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
+  const { session } = useSupabaseSession();
+
+  // Equipe interna: detecta @inovaclick.com.br pelo login VexSoft ou pela sessão Supabase.
+  const emailUsuario = (user?.email as string) || session?.user?.email || "";
+  const isInterno = /@inovaclick\.com\.br$/i.test(emailUsuario);
 
   const handleLogout = () => {
     logout();
@@ -53,6 +59,19 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
+            {isInterno && (
+              <Link
+                to="/gerenciar"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors inline-flex items-center gap-1.5 ${
+                  location.pathname.startsWith("/gerenciar")
+                    ? "text-primary bg-sidebar-accent"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                <Settings className="h-3.5 w-3.5" />
+                Gerenciar
+              </Link>
+            )}
           </nav>
         </div>
 
@@ -114,6 +133,16 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
+            {isInterno && (
+              <Link
+                to="/gerenciar"
+                onClick={() => setMobileOpen(false)}
+                className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted inline-flex items-center gap-1.5"
+              >
+                <Settings className="h-4 w-4" />
+                Gerenciar documentação
+              </Link>
+            )}
             <div className="flex gap-2 mt-3 pt-3 border-t border-border">
               {isAuthenticated ? (
                 <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => { handleLogout(); setMobileOpen(false); }}>

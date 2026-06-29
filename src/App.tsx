@@ -61,7 +61,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 // Acesso exclusivo da equipe interna @inovaclick.com.br (tela de gerenciamento).
 function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { session, loading } = useSupabaseSession();
+  const { user } = useAuth();                         // login VexSoft (traz o e-mail)
+  const { session, loading } = useSupabaseSession();  // sessão Supabase (quando houver)
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -69,8 +70,8 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-  const email = session?.user?.email ?? "";
-  if (!session || !/@inovaclick\.com\.br$/i.test(email)) {
+  const email = ((user?.email as string) || session?.user?.email || "");
+  if (!/@inovaclick\.com\.br$/i.test(email)) {
     return <Navigate to="/login" replace />;
   }
   return <>{children}</>;
