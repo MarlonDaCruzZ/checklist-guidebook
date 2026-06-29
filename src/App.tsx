@@ -37,6 +37,8 @@ const CamposFixos = lazy(() => import("./pages/CamposFixos"));
 const Login = lazy(() => import("./pages/Login"));
 const Artigo = lazy(() => import("./pages/Artigo"));
 const LoginEquipe = lazy(() => import("./pages/LoginEquipe"));
+const GerenciarDocs = lazy(() => import("./pages/GerenciarDocs"));
+const EditorDoc = lazy(() => import("./pages/EditorDoc"));
 
 const queryClient = new QueryClient();
 
@@ -57,6 +59,23 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <Navigate to="/login" replace />;
 }
 
+// Acesso exclusivo da equipe interna @inovaclick.com.br (tela de gerenciamento).
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { session, loading } = useSupabaseSession();
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+  const email = session?.user?.email ?? "";
+  if (!session || !/@inovaclick\.com\.br$/i.test(email)) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -71,6 +90,9 @@ const App = () => (
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/documentacao" element={<ProtectedRoute><Documentacao /></ProtectedRoute>} />
               <Route path="/doc/:slug" element={<ProtectedRoute><Artigo /></ProtectedRoute>} />
+              <Route path="/gerenciar" element={<AdminRoute><GerenciarDocs /></AdminRoute>} />
+              <Route path="/gerenciar/novo" element={<AdminRoute><EditorDoc /></AdminRoute>} />
+              <Route path="/gerenciar/:id" element={<AdminRoute><EditorDoc /></AdminRoute>} />
               <Route path="/guia-rapido" element={<ProtectedRoute><GuiaRapido /></ProtectedRoute>} />
               <Route path="/documentacao/configurar-checklist" element={<ProtectedRoute><ConfigurarChecklist /></ProtectedRoute>} />
               <Route path="/documentacao/troubleshooting" element={<ProtectedRoute><Troubleshooting /></ProtectedRoute>} />
