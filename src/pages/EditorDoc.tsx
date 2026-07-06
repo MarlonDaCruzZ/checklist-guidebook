@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +14,7 @@ import {
   getArtigoById,
   type ArtigoInput,
 } from "@/lib/docs";
-import { ArrowLeft, Save, Loader2, Eye, Code } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Eye, Code, FileText } from "lucide-react";
 
 function slugify(texto: string) {
   return texto
@@ -50,7 +49,6 @@ export default function EditorDoc() {
   const [erro, setErro] = useState("");
   const [abaPreview, setAbaPreview] = useState(false);
 
-  // Carrega o documento ao editar
   const { data: artigo } = useQuery({
     queryKey: ["admin-artigo", id],
     queryFn: () => getArtigoById(id!),
@@ -76,8 +74,7 @@ export default function EditorDoc() {
     setForm((f) => ({ ...f, [campo]: valor }));
 
   const salvar = useMutation({
-    mutationFn: () =>
-      editando ? updateArtigo(id!, form) : createArtigo(form),
+    mutationFn: () => (editando ? updateArtigo(id!, form) : createArtigo(form)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-artigos"] });
       queryClient.invalidateQueries({ queryKey: ["categorias"] });
@@ -105,17 +102,22 @@ export default function EditorDoc() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      <div className="container py-8 flex-1 max-w-4xl">
-        <button
-          onClick={() => navigate("/gerenciar")}
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
-        >
-          <ArrowLeft className="h-4 w-4" /> Voltar para a lista
-        </button>
-
-        <h1 className="text-2xl font-extrabold mb-6">
-          {editando ? "Editar documento" : "Novo documento"}
-        </h1>
+      <div className="container py-6 flex-1">
+        {/* Barra superior */}
+        <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+          <div>
+            <button
+              onClick={() => navigate("/gerenciar")}
+              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1"
+            >
+              <ArrowLeft className="h-4 w-4" /> Documentos
+            </button>
+            <h1 className="text-2xl font-extrabold flex items-center gap-2">
+              <FileText className="h-6 w-6 text-primary" />
+              {editando ? "Editar documento" : "Adicionar novo"}
+            </h1>
+          </div>
+        </div>
 
         {erro && (
           <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
@@ -123,153 +125,158 @@ export default function EditorDoc() {
           </div>
         )}
 
-        <div className="space-y-5">
-          {/* Título */}
-          <div className="space-y-2">
-            <Label htmlFor="titulo">Título</Label>
+        {/* Layout 2 colunas estilo WordPress */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
+          {/* Coluna principal: título + conteúdo */}
+          <div className="space-y-4 min-w-0">
             <Input
-              id="titulo"
               value={form.titulo}
               onChange={(e) => {
                 set("titulo", e.target.value);
                 if (!slugManual) set("slug", slugify(e.target.value));
               }}
-              placeholder="Ex.: Como configurar a sincronização"
-              className="h-11"
+              placeholder="Adicione o título"
+              className="h-14 text-xl font-bold px-4 bg-card"
             />
-          </div>
 
-          {/* Slug */}
-          <div className="space-y-2">
-            <Label htmlFor="slug">Endereço (slug)</Label>
-            <Input
-              id="slug"
-              value={form.slug}
-              onChange={(e) => {
-                setSlugManual(true);
-                set("slug", slugify(e.target.value));
-              }}
-              placeholder="como-configurar-sincronizacao"
-              className="h-11 font-mono text-sm"
-            />
-            <p className="text-xs text-muted-foreground">O artigo ficará em /doc/{form.slug || "..."}</p>
-          </div>
-
-          {/* Categoria + Ordem + Status */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="categoria">Categoria</Label>
-              <select
-                id="categoria"
-                value={form.categoria_id}
-                onChange={(e) => set("categoria_id", e.target.value)}
-                className="h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
-              >
-                <option value="">Selecione...</option>
-                {categorias?.map((c) => (
-                  <option key={c.id} value={c.id}>{c.nome}</option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="ordem">Ordem de exibição</Label>
-              <Input
-                id="ordem"
-                type="number"
-                min={0}
-                value={form.ordem}
-                onChange={(e) => set("ordem", Number(e.target.value))}
-                className="h-11"
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>Endereço:</span>
+              <span className="font-mono">/doc/</span>
+              <input
+                value={form.slug}
+                onChange={(e) => {
+                  setSlugManual(true);
+                  set("slug", slugify(e.target.value));
+                }}
+                placeholder="slug-do-documento"
+                className="font-mono bg-transparent border-b border-border focus:outline-none focus:border-primary px-1 flex-1 min-w-0"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <select
-                id="status"
-                value={form.status}
-                onChange={(e) => set("status", e.target.value as ArtigoInput["status"])}
-                className="h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
-              >
-                <option value="rascunho">Rascunho</option>
-                <option value="publicado">Publicado</option>
-                <option value="arquivado">Arquivado</option>
-              </select>
+
+            {/* Editor de conteúdo */}
+            <div className="border border-border rounded-xl overflow-hidden bg-card">
+              <div className="flex items-center justify-between border-b border-border px-3 py-2">
+                <span className="text-sm font-medium">Conteúdo</span>
+                <div className="flex rounded-md border border-border overflow-hidden text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setAbaPreview(false)}
+                    className={`px-3 py-1.5 flex items-center gap-1 ${!abaPreview ? "bg-muted font-medium" : "text-muted-foreground"}`}
+                  >
+                    <Code className="h-3.5 w-3.5" /> Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAbaPreview(true)}
+                    className={`px-3 py-1.5 flex items-center gap-1 ${abaPreview ? "bg-muted font-medium" : "text-muted-foreground"}`}
+                  >
+                    <Eye className="h-3.5 w-3.5" /> Visualizar
+                  </button>
+                </div>
+              </div>
+              {abaPreview ? (
+                <article className="prose prose-slate dark:prose-invert max-w-none min-h-[400px] p-5">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {form.conteudo || "_Nada para visualizar ainda._"}
+                  </ReactMarkdown>
+                </article>
+              ) : (
+                <textarea
+                  value={form.conteudo}
+                  onChange={(e) => set("conteudo", e.target.value)}
+                  placeholder={"# Título\n\nEscreva o conteúdo em Markdown..."}
+                  className="w-full min-h-[400px] bg-transparent p-5 text-sm font-mono leading-relaxed focus:outline-none resize-y"
+                />
+              )}
             </div>
+            <p className="text-xs text-muted-foreground">
+              Markdown: # títulos, **negrito**, listas, links, tabelas, &gt; citações.
+            </p>
           </div>
 
-          {/* Resumo */}
-          <div className="space-y-2">
-            <Label htmlFor="resumo">Resumo (opcional)</Label>
-            <Input
-              id="resumo"
-              value={form.resumo ?? ""}
-              onChange={(e) => set("resumo", e.target.value)}
-              placeholder="Frase curta exibida nos cards e na busca"
-              className="h-11"
-            />
-          </div>
-
-          {/* Conteúdo (Markdown + preview) */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Conteúdo (Markdown)</Label>
-              <div className="flex rounded-md border border-border overflow-hidden text-xs">
-                <button
-                  type="button"
-                  onClick={() => setAbaPreview(false)}
-                  className={`px-3 py-1.5 flex items-center gap-1 ${!abaPreview ? "bg-muted font-medium" : "text-muted-foreground"}`}
+          {/* Painel lateral: Publicar / Categoria / Ordem / Resumo */}
+          <aside className="space-y-4 lg:sticky lg:top-20">
+            {/* Publicar */}
+            <div className="border border-border rounded-xl bg-card overflow-hidden">
+              <div className="border-b border-border px-4 py-3 font-semibold text-sm">Publicar</div>
+              <div className="p-4 space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="status" className="text-xs">Status</Label>
+                  <select
+                    id="status"
+                    value={form.status}
+                    onChange={(e) => set("status", e.target.value as ArtigoInput["status"])}
+                    className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm"
+                  >
+                    <option value="rascunho">Rascunho</option>
+                    <option value="publicado">Publicado</option>
+                    <option value="arquivado">Arquivado</option>
+                  </select>
+                </div>
+                <Button
+                  onClick={handleSalvar}
+                  disabled={salvar.isPending}
+                  className="w-full gradient-primary text-primary-foreground border-0"
                 >
-                  <Code className="h-3.5 w-3.5" /> Editar
-                </button>
+                  {salvar.isPending ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Salvando...</>
+                  ) : (
+                    <><Save className="h-4 w-4 mr-2" /> Salvar</>
+                  )}
+                </Button>
                 <button
-                  type="button"
-                  onClick={() => setAbaPreview(true)}
-                  className={`px-3 py-1.5 flex items-center gap-1 ${abaPreview ? "bg-muted font-medium" : "text-muted-foreground"}`}
+                  onClick={() => navigate("/gerenciar")}
+                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground py-1"
                 >
-                  <Eye className="h-3.5 w-3.5" /> Pré-visualizar
+                  Cancelar
                 </button>
               </div>
             </div>
 
-            {abaPreview ? (
-              <article className="prose prose-slate dark:prose-invert max-w-none min-h-[300px] border border-border rounded-md p-4">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {form.conteudo || "_Nada para pré-visualizar ainda._"}
-                </ReactMarkdown>
-              </article>
-            ) : (
-              <textarea
-                value={form.conteudo}
-                onChange={(e) => set("conteudo", e.target.value)}
-                placeholder={"# Título\n\nEscreva o conteúdo em Markdown..."}
-                className="w-full min-h-[300px] rounded-md border border-border bg-background p-4 text-sm font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-ring/30"
-              />
-            )}
-            <p className="text-xs text-muted-foreground">
-              Suporta Markdown: # títulos, **negrito**, listas, links, tabelas, &gt; citações.
-            </p>
-          </div>
-
-          {/* Ações */}
-          <div className="flex items-center gap-3 pt-2">
-            <Button
-              onClick={handleSalvar}
-              disabled={salvar.isPending}
-              className="gradient-primary text-primary-foreground border-0"
-            >
-              {salvar.isPending ? (
-                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Salvando...</>
-              ) : (
-                <><Save className="h-4 w-4 mr-2" /> Salvar</>
-              )}
-            </Button>
-            <Button variant="outline" onClick={() => navigate("/gerenciar")}>
-              Cancelar
-            </Button>
-          </div>
+            {/* Organização */}
+            <div className="border border-border rounded-xl bg-card overflow-hidden">
+              <div className="border-b border-border px-4 py-3 font-semibold text-sm">Organização</div>
+              <div className="p-4 space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="categoria" className="text-xs">Categoria</Label>
+                  <select
+                    id="categoria"
+                    value={form.categoria_id}
+                    onChange={(e) => set("categoria_id", e.target.value)}
+                    className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm"
+                  >
+                    <option value="">Selecione...</option>
+                    {categorias?.map((c) => (
+                      <option key={c.id} value={c.id}>{c.nome}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="ordem" className="text-xs">Ordem de exibição</Label>
+                  <Input
+                    id="ordem"
+                    type="number"
+                    min={0}
+                    value={form.ordem}
+                    onChange={(e) => set("ordem", Number(e.target.value))}
+                    className="h-10"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="resumo" className="text-xs">Resumo (opcional)</Label>
+                  <textarea
+                    id="resumo"
+                    value={form.resumo ?? ""}
+                    onChange={(e) => set("resumo", e.target.value)}
+                    placeholder="Frase curta exibida nos cards e na busca"
+                    className="w-full min-h-[70px] rounded-md border border-border bg-background p-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 resize-y"
+                  />
+                </div>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }
