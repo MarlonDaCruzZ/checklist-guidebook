@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -235,12 +235,6 @@ const Login = () => {
               >
                 Fale com o suporte
               </a>
-            </p>
-            <p className="text-sm text-muted-foreground">
-              É da equipe Inovaclick?{" "}
-              <Link to="/login-equipe" className="text-primary font-medium hover:underline">
-                Acesse aqui
-              </Link>
             </p>
           </div>
         </div>

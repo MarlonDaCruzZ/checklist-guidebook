@@ -3,7 +3,7 @@ import { Search, Menu, X, LogOut, User, Settings } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSupabaseSession } from "@/hooks/useSupabaseSession";
+import { isAdmin } from "@/lib/isAdmin";
 
 const navLinks = [
   { label: "Início", href: "/" },
@@ -18,11 +18,9 @@ export function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
-  const { session } = useSupabaseSession();
 
-  // Equipe interna: detecta @inovaclick.com.br pelo login VexSoft ou pela sessão Supabase.
-  const emailUsuario = (user?.email as string) || session?.user?.email || "";
-  const isInterno = /@inovaclick\.com\.br$/i.test(emailUsuario);
+  // Equipe interna: detecta @inovaclick.com.br pelo e-mail do login externo.
+  const isInterno = isAdmin(user);
 
   const handleLogout = () => {
     logout();

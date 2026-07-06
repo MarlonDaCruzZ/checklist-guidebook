@@ -117,10 +117,14 @@ export async function removerFavorito(artigoId: string): Promise<void> {
 }
 
 // ====================================================================
-// ADMIN — gerenciamento de documentos (@inovaclick.com.br via RLS)
+// ADMIN — gerenciamento de documentos
+// Escrita/leitura-admin passam pela Edge Function `docs-admin`, que valida
+// o domínio @inovaclick.com.br no servidor e grava com a service role.
+// A permissão vem do login EXTERNO (não do Supabase Auth).
 // ====================================================================
 
 export interface ArtigoAdmin extends Artigo {
+  conteudo_html?: string | null;
   categorias?: Pick<Categoria, "nome" | "slug"> | null;
 }
 
@@ -130,6 +134,7 @@ export interface ArtigoInput {
   categoria_id: string;
   resumo?: string | null;
   conteudo: string;
+  conteudo_html?: string | null;
   ordem: number;
   status: "rascunho" | "publicado" | "arquivado";
 }
@@ -139,64 +144,59 @@ export interface ListaAdminFiltro {
   categoriaId?: string;
 }
 
+const EDGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/docs-admin`;
+const PUBLISHABLE = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+
+/** Credenciais do login externo (persistidas pelo AuthContext no localStorage). */
+function credenciaisExternas() {
+  const token = localStorage.getItem("vex_token") ?? "";
+  let email = "";
+  try {
+    email = (JSON.parse(localStorage.getItem("vex_user") ?? "{}")?.email as string) ?? "";
+  } catch {
+    email = "";
+  }
+  return { token, email };
+}
+
+async function adminRequest<T>(action: string, extra: Record<string, unknown> = {}): Promise<T> {
+  const { token, email } = credenciaisExternas();
+  const res = await fetch(EDGE_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: PUBLISHABLE,
+      Authorization: `Bearer ${PUBLISHABLE}`,
+    },
+    body: JSON.stringify({ action, email, token, ...extra }),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json?.error || `Falha na operação (${res.status})`);
+  return json as T;
+}
+
 /** Lista todos os documentos (todos os status) com busca e filtro por categoria. */
 export async function listAllArtigos(filtro: ListaAdminFiltro = {}): Promise<ArtigoAdmin[]> {
-  let query = supabase
-    .from("artigos")
-    .select("*, categorias(nome, slug)")
-    .order("categoria_id", { ascending: true })
-    .order("ordem", { ascending: true });
-
-  if (filtro.categoriaId) query = query.eq("categoria_id", filtro.categoriaId);
-  if (filtro.busca && filtro.busca.trim()) {
-    query = query.ilike("titulo", `%${filtro.busca.trim()}%`);
-  }
-
-  const { data, error } = await query;
-  if (error) throw error;
-  return (data ?? []) as ArtigoAdmin[];
+  const { data } = await adminRequest<{ data: ArtigoAdmin[] }>("list", { filtro });
+  return data ?? [];
 }
 
 /** Busca um documento por ID (qualquer status) — usado no editor. */
 export async function getArtigoById(id: string): Promise<ArtigoAdmin> {
-  const { data, error } = await supabase
-    .from("artigos")
-    .select("*, categorias(nome, slug)")
-    .eq("id", id)
-    .single();
-  if (error) throw error;
-  return data as ArtigoAdmin;
-}
-
-function comPublishedAt(input: ArtigoInput) {
-  // Define published_at na primeira publicação.
-  return input.status === "publicado"
-    ? { ...input, published_at: new Date().toISOString() }
-    : input;
+  const { data } = await adminRequest<{ data: ArtigoAdmin }>("get", { id });
+  return data;
 }
 
 export async function createArtigo(input: ArtigoInput): Promise<Artigo> {
-  const { data, error } = await supabase
-    .from("artigos")
-    .insert(comPublishedAt(input))
-    .select()
-    .single();
-  if (error) throw error;
-  return data as Artigo;
+  const { data } = await adminRequest<{ data: Artigo }>("create", { payload: input });
+  return data;
 }
 
 export async function updateArtigo(id: string, input: ArtigoInput): Promise<Artigo> {
-  const { data, error } = await supabase
-    .from("artigos")
-    .update(input)
-    .eq("id", id)
-    .select()
-    .single();
-  if (error) throw error;
-  return data as Artigo;
+  const { data } = await adminRequest<{ data: Artigo }>("update", { id, payload: input });
+  return data;
 }
 
 export async function deleteArtigo(id: string): Promise<void> {
-  const { error } = await supabase.from("artigos").delete().eq("id", id);
-  if (error) throw error;
+  await adminRequest("delete", { id });
 }

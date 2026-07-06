@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { useSupabaseSession } from "@/hooks/useSupabaseSession";
+import { isAdmin } from "@/lib/isAdmin";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -36,44 +36,22 @@ const Questionario = lazy(() => import("./pages/Questionario"));
 const CamposFixos = lazy(() => import("./pages/CamposFixos"));
 const Login = lazy(() => import("./pages/Login"));
 const Artigo = lazy(() => import("./pages/Artigo"));
-const LoginEquipe = lazy(() => import("./pages/LoginEquipe"));
 const GerenciarDocs = lazy(() => import("./pages/GerenciarDocs"));
 const EditorDoc = lazy(() => import("./pages/EditorDoc"));
 
 const queryClient = new QueryClient();
 
+// Requer login (externo VexSoft) para ver a documentação.
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();        // login VexSoft (clientes)
-  const { session, loading } = useSupabaseSession(); // login interno @inovaclick.com.br
-
-  // Acesso liberado com qualquer um dos dois logins.
-  if (isAuthenticated) return <>{children}</>;
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-  if (session) return <>{children}</>;
-  return <Navigate to="/login" replace />;
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return <>{children}</>;
 }
 
-// Acesso exclusivo da equipe interna @inovaclick.com.br (tela de gerenciamento).
+// Edição restrita a @inovaclick.com.br (determinado pelo e-mail do login externo).
 function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();                         // login VexSoft (traz o e-mail)
-  const { session, loading } = useSupabaseSession();  // sessão Supabase (quando houver)
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-  const email = ((user?.email as string) || session?.user?.email || "");
-  if (!/@inovaclick\.com\.br$/i.test(email)) {
-    return <Navigate to="/login" replace />;
-  }
+  const { user } = useAuth();
+  if (!isAdmin(user)) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
@@ -87,7 +65,6 @@ const App = () => (
           <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>}>
             <Routes>
               <Route path="/login" element={<Login />} />
-              <Route path="/login-equipe" element={<LoginEquipe />} />
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/documentacao" element={<ProtectedRoute><Documentacao /></ProtectedRoute>} />
               <Route path="/doc/:slug" element={<ProtectedRoute><Artigo /></ProtectedRoute>} />
