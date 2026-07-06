@@ -19,6 +19,7 @@ export interface Artigo {
   slug: string;
   resumo: string | null;
   conteudo: string;
+  conteudo_html: string | null;
   status: "rascunho" | "publicado" | "arquivado";
   ordem: number;
   visualizacoes: number;
@@ -124,7 +125,6 @@ export async function removerFavorito(artigoId: string): Promise<void> {
 // ====================================================================
 
 export interface ArtigoAdmin extends Artigo {
-  conteudo_html?: string | null;
   categorias?: Pick<Categoria, "nome" | "slug"> | null;
 }
 

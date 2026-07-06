@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RichEditor } from "@/components/RichEditor";
 import { useCategorias } from "@/hooks/useDocs";
 import {
   createArtigo,
@@ -14,7 +13,7 @@ import {
   getArtigoById,
   type ArtigoInput,
 } from "@/lib/docs";
-import { ArrowLeft, Save, Loader2, Eye, Code, FileText } from "lucide-react";
+import { ArrowLeft, Save, Loader2, FileText } from "lucide-react";
 
 function slugify(texto: string) {
   return texto
@@ -27,12 +26,20 @@ function slugify(texto: string) {
     .replace(/-+/g, "-");
 }
 
+// Extrai texto puro do HTML (alimenta a busca full-text via campo `conteudo`).
+function htmlParaTexto(html: string) {
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return (div.textContent || "").replace(/\s+/g, " ").trim();
+}
+
 const VAZIO: ArtigoInput = {
   titulo: "",
   slug: "",
   categoria_id: "",
   resumo: "",
   conteudo: "",
+  conteudo_html: "",
   ordem: 1,
   status: "rascunho",
 };
@@ -47,7 +54,6 @@ export default function EditorDoc() {
   const [form, setForm] = useState<ArtigoInput>(VAZIO);
   const [slugManual, setSlugManual] = useState(false);
   const [erro, setErro] = useState("");
-  const [abaPreview, setAbaPreview] = useState(false);
 
   const { data: artigo } = useQuery({
     queryKey: ["admin-artigo", id],
@@ -63,6 +69,7 @@ export default function EditorDoc() {
         categoria_id: artigo.categoria_id,
         resumo: artigo.resumo ?? "",
         conteudo: artigo.conteudo,
+        conteudo_html: artigo.conteudo_html ?? "",
         ordem: artigo.ordem,
         status: artigo.status,
       });
@@ -74,7 +81,13 @@ export default function EditorDoc() {
     setForm((f) => ({ ...f, [campo]: valor }));
 
   const salvar = useMutation({
-    mutationFn: () => (editando ? updateArtigo(id!, form) : createArtigo(form)),
+    mutationFn: () => {
+      const payload: ArtigoInput = {
+        ...form,
+        conteudo: htmlParaTexto(form.conteudo_html ?? ""),
+      };
+      return editando ? updateArtigo(id!, payload) : createArtigo(payload);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-artigos"] });
       queryClient.invalidateQueries({ queryKey: ["categorias"] });
@@ -94,7 +107,7 @@ export default function EditorDoc() {
     setErro("");
     if (!form.titulo.trim()) return setErro("Informe o título.");
     if (!form.categoria_id) return setErro("Selecione a categoria.");
-    if (!form.conteudo.trim()) return setErro("O conteúdo não pode ficar vazio.");
+    if (!htmlParaTexto(form.conteudo_html ?? "")) return setErro("O conteúdo não pode ficar vazio.");
     if (!form.slug.trim()) return setErro("O slug não pode ficar vazio.");
     salvar.mutate();
   };
@@ -153,45 +166,11 @@ export default function EditorDoc() {
               />
             </div>
 
-            {/* Editor de conteúdo */}
-            <div className="border border-border rounded-xl overflow-hidden bg-card">
-              <div className="flex items-center justify-between border-b border-border px-3 py-2">
-                <span className="text-sm font-medium">Conteúdo</span>
-                <div className="flex rounded-md border border-border overflow-hidden text-xs">
-                  <button
-                    type="button"
-                    onClick={() => setAbaPreview(false)}
-                    className={`px-3 py-1.5 flex items-center gap-1 ${!abaPreview ? "bg-muted font-medium" : "text-muted-foreground"}`}
-                  >
-                    <Code className="h-3.5 w-3.5" /> Editar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAbaPreview(true)}
-                    className={`px-3 py-1.5 flex items-center gap-1 ${abaPreview ? "bg-muted font-medium" : "text-muted-foreground"}`}
-                  >
-                    <Eye className="h-3.5 w-3.5" /> Visualizar
-                  </button>
-                </div>
-              </div>
-              {abaPreview ? (
-                <article className="prose prose-slate dark:prose-invert max-w-none min-h-[400px] p-5">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {form.conteudo || "_Nada para visualizar ainda._"}
-                  </ReactMarkdown>
-                </article>
-              ) : (
-                <textarea
-                  value={form.conteudo}
-                  onChange={(e) => set("conteudo", e.target.value)}
-                  placeholder={"# Título\n\nEscreva o conteúdo em Markdown..."}
-                  className="w-full min-h-[400px] bg-transparent p-5 text-sm font-mono leading-relaxed focus:outline-none resize-y"
-                />
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Markdown: # títulos, **negrito**, listas, links, tabelas, &gt; citações.
-            </p>
+            {/* Editor rico (TipTap) */}
+            <RichEditor
+              value={form.conteudo_html || ""}
+              onChange={(html) => set("conteudo_html", html)}
+            />
           </div>
 
           {/* Painel lateral: Publicar / Categoria / Ordem / Resumo */}

@@ -1,12 +1,11 @@
 import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { DocSidebar } from "@/components/DocSidebar";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { WhatsAppWidget } from "@/components/WhatsAppWidget";
+import { RichContent } from "@/components/RichContent";
 import { useArtigo } from "@/hooks/useDocs";
 import { incrementarVisualizacao } from "@/lib/docs";
 
@@ -53,9 +52,9 @@ export default function Artigo() {
                   { label: artigo.titulo },
                 ]}
               />
-              <article className="prose prose-slate dark:prose-invert max-w-none mt-4">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{artigo.conteudo}</ReactMarkdown>
-              </article>
+              <div className="mt-4">
+                <RichContent html={artigo.conteudo_html} markdown={artigo.conteudo} />
+              </div>
               {artigo.updated_at && (
                 <p className="text-xs text-muted-foreground mt-8 pt-4 border-t border-border">
                   Atualizado em {new Date(artigo.updated_at).toLocaleDateString("pt-BR")}
