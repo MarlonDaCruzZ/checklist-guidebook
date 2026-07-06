@@ -11,6 +11,7 @@ import {
   createArtigo,
   updateArtigo,
   getArtigoById,
+  criarCategoria,
   type ArtigoInput,
 } from "@/lib/docs";
 import { ArrowLeft, Save, Loader2, FileText } from "lucide-react";
@@ -102,6 +103,18 @@ export default function EditorDoc() {
       );
     },
   });
+
+  const handleNovaCategoria = async () => {
+    const nome = window.prompt("Nome da nova categoria:");
+    if (!nome?.trim()) return;
+    try {
+      const cat = await criarCategoria(nome.trim());
+      await queryClient.invalidateQueries({ queryKey: ["categorias"] });
+      set("categoria_id", cat.id);
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Não foi possível criar a categoria.");
+    }
+  };
 
   const handleSalvar = () => {
     setErro("");
@@ -217,7 +230,16 @@ export default function EditorDoc() {
               <div className="border-b border-border px-4 py-3 font-semibold text-sm">Organização</div>
               <div className="p-4 space-y-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="categoria" className="text-xs">Categoria</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="categoria" className="text-xs">Categoria</Label>
+                    <button
+                      type="button"
+                      onClick={handleNovaCategoria}
+                      className="text-xs text-primary hover:underline font-medium"
+                    >
+                      + Nova
+                    </button>
+                  </div>
                   <select
                     id="categoria"
                     value={form.categoria_id}

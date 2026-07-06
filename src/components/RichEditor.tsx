@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import { Node, mergeAttributes } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
+import { uploadImagem } from "@/lib/docs";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import Youtube from "@tiptap/extension-youtube";
@@ -13,7 +14,7 @@ import TableHeader from "@tiptap/extension-table-header";
 import {
   Bold, Italic, Strikethrough, Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Code, Link as LinkIcon, Image as ImageIcon,
-  Youtube as YoutubeIcon, Table as TableIcon, Info, AlertTriangle, Undo, Redo,
+  Youtube as YoutubeIcon, Table as TableIcon, Info, AlertTriangle, Undo, Redo, Loader2,
 } from "lucide-react";
 
 // Nó customizado "aviso" (callout): <div data-callout data-tipo="info|atencao">
@@ -71,8 +72,27 @@ function Botao({
 
 function Barra({ editor }: { editor: Editor }) {
   const sep = <span className="w-px h-5 bg-border mx-0.5" />;
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [enviando, setEnviando] = useState(false);
+
+  const onImagem = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setEnviando(true);
+    try {
+      const url = await uploadImagem(file);
+      editor.chain().focus().setImage({ src: url }).run();
+    } catch (err) {
+      window.alert("Falha ao enviar imagem: " + (err instanceof Error ? err.message : ""));
+    } finally {
+      setEnviando(false);
+    }
+  };
+
   return (
     <div className="flex flex-wrap items-center gap-0.5 border-b border-border px-2 py-1.5 sticky top-0 bg-card z-10">
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onImagem} />
       <Botao titulo="Título 1" ativo={editor.isActive("heading", { level: 1 })}
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="h-4 w-4" /></Botao>
       <Botao titulo="Título 2" ativo={editor.isActive("heading", { level: 2 })}
@@ -101,11 +121,10 @@ function Barra({ editor }: { editor: Editor }) {
           const url = window.prompt("URL do link:");
           if (url) editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
         }}><LinkIcon className="h-4 w-4" /></Botao>
-      <Botao titulo="Imagem (URL)"
-        onClick={() => {
-          const url = window.prompt("URL da imagem:");
-          if (url) editor.chain().focus().setImage({ src: url }).run();
-        }}><ImageIcon className="h-4 w-4" /></Botao>
+      <Botao titulo="Imagem (enviar do computador)"
+        onClick={() => fileRef.current?.click()}>
+        {enviando ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+      </Botao>
       <Botao titulo="Vídeo do YouTube"
         onClick={() => {
           const url = window.prompt("URL do vídeo (YouTube):");

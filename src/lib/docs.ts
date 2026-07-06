@@ -200,3 +200,25 @@ export async function updateArtigo(id: string, input: ArtigoInput): Promise<Arti
 export async function deleteArtigo(id: string): Promise<void> {
   await adminRequest("delete", { id });
 }
+
+/** Cria uma nova categoria (via Edge Function). */
+export async function criarCategoria(nome: string): Promise<Categoria> {
+  const { data } = await adminRequest<{ data: Categoria }>("criar-categoria", {
+    payload: { nome },
+  });
+  return data;
+}
+
+/** Envia uma imagem para o Storage (via Edge Function) e devolve a URL pública. */
+export async function uploadImagem(file: File): Promise<string> {
+  const base64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1] ?? "");
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+  const { url } = await adminRequest<{ url: string }>("upload-imagem", {
+    payload: { arquivo: base64, nome: file.name, tipo: file.type },
+  });
+  return url;
+}
