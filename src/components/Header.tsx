@@ -1,7 +1,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, Menu, X, LogOut, User, Settings } from "lucide-react";
+import { Menu, X, LogOut, User, Settings } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { SearchBar } from "@/components/SearchBar";
 import { useAuth } from "@/contexts/AuthContext";
 import { isAdmin } from "@/lib/isAdmin";
 
@@ -18,8 +19,6 @@ export function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
-
-  // Equipe interna: detecta @inovaclick.com.br pelo e-mail do login externo.
   const isInterno = isAdmin(user);
 
   const handleLogout = () => {
@@ -27,106 +26,92 @@ export function Header() {
     navigate("/login");
   };
 
+  const linkClasses = (href: string) =>
+    `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+      location.pathname === href
+        ? "text-primary bg-sidebar-accent"
+        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+    }`;
+
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-8">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">V</span>
-            </div>
-            <span className="font-display font-bold text-lg">
-              Vex<span className="text-gradient-primary">Soft</span>
-            </span>
-            <span className="text-xs font-medium text-muted-foreground border border-border rounded-full px-2 py-0.5 ml-1">
-              Ajuda
-            </span>
-          </Link>
+      <div className="container flex h-16 items-center gap-4">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2 shrink-0">
+          <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-sm">V</span>
+          </div>
+          <span className="font-display font-bold text-lg hidden sm:inline">
+            Vex<span className="text-gradient-primary">Soft</span>
+          </span>
+          <span className="text-xs font-medium text-muted-foreground border border-border rounded-full px-2 py-0.5">
+            Ajuda
+          </span>
+        </Link>
 
-          <nav className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  location.pathname === link.href
-                    ? "text-primary bg-sidebar-accent"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-            {isInterno && (
-              <Link
-                to="/gerenciar"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors inline-flex items-center gap-1.5 ${
-                  location.pathname.startsWith("/gerenciar")
-                    ? "text-primary bg-sidebar-accent"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
-              >
-                <Settings className="h-3.5 w-3.5" />
-                Gerenciar
-              </Link>
-            )}
-          </nav>
+        {/* Navegação (desktop) */}
+        <nav className="hidden lg:flex items-center gap-1">
+          {navLinks.map((link) => (
+            <Link key={link.href} to={link.href} className={linkClasses(link.href)}>
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Busca — ocupa o espaço central e fica sempre acessível */}
+        <div className="flex-1 flex justify-end lg:justify-center max-w-md mx-auto">
+          <SearchBar className="w-full max-w-sm hidden sm:block" />
         </div>
 
-        <div className="flex items-center gap-3">
-          <Link to="/" className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <Search className="h-4 w-4" />
-            <span className="hidden md:inline">Buscar...</span>
-            <kbd className="hidden md:inline-flex h-5 items-center rounded border border-border px-1.5 text-[10px] font-mono text-muted-foreground">
-              ⌘K
-            </kbd>
-          </Link>
+        {/* Conta e ações (direita) */}
+        <div className="flex items-center gap-2 shrink-0">
+          {isInterno && (
+            <Link to="/gerenciar" className="hidden md:inline-flex">
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <Settings className="h-3.5 w-3.5" />
+                Gerenciar
+              </Button>
+            </Link>
+          )}
           {isAuthenticated ? (
             <>
-              <span className="hidden sm:inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-                <User className="h-4 w-4" />
-                {user?.nome || user?.email || "Usuario"}
+              <span className="hidden xl:inline-flex items-center gap-1.5 text-sm text-muted-foreground max-w-[160px] truncate">
+                <User className="h-4 w-4 shrink-0" />
+                <span className="truncate">{user?.nome || user?.email || "Usuário"}</span>
               </span>
-              <Button variant="outline" size="sm" className="hidden sm:inline-flex gap-1.5" onClick={handleLogout}>
+              <Button variant="ghost" size="sm" className="hidden sm:inline-flex gap-1.5" onClick={handleLogout}>
                 <LogOut className="h-3.5 w-3.5" />
                 Sair
               </Button>
             </>
           ) : (
-            <Link to="/login">
-              <Button variant="outline" size="sm" className="hidden sm:inline-flex">
-                Entrar
-              </Button>
+            <Link to="/login" className="hidden sm:inline-flex">
+              <Button variant="outline" size="sm">Entrar</Button>
             </Link>
           )}
-          <Link to="https://wa.me/message/3MPLPHHHKVZSP1" target="_blank">
-            <Button size="sm" className="gradient-primary text-primary-foreground border-0 hidden sm:inline-flex">
-              Agendar Demonstração
-            </Button>
-          </Link>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="lg:hidden p-2 rounded-md hover:bg-muted transition-colors"
+            aria-label="Menu"
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Menu mobile */}
       {mobileOpen && (
         <div className="lg:hidden border-t border-border bg-background animate-fade-in">
           <nav className="container py-4 flex flex-col gap-1">
+            <div className="sm:hidden mb-2">
+              <SearchBar className="w-full" />
+            </div>
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
                 onClick={() => setMobileOpen(false)}
-                className={`px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
-                  location.pathname === link.href
-                    ? "text-primary bg-sidebar-accent"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
+                className={linkClasses(link.href)}
               >
                 {link.label}
               </Link>
@@ -135,28 +120,23 @@ export function Header() {
               <Link
                 to="/gerenciar"
                 onClick={() => setMobileOpen(false)}
-                className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted inline-flex items-center gap-1.5"
+                className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted inline-flex items-center gap-1.5"
               >
                 <Settings className="h-4 w-4" />
                 Gerenciar documentação
               </Link>
             )}
-            <div className="flex gap-2 mt-3 pt-3 border-t border-border">
+            <div className="mt-3 pt-3 border-t border-border">
               {isAuthenticated ? (
-                <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => { handleLogout(); setMobileOpen(false); }}>
+                <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => { handleLogout(); setMobileOpen(false); }}>
                   <LogOut className="h-3.5 w-3.5" />
                   Sair
                 </Button>
               ) : (
-                <Link to="/login" className="flex-1" onClick={() => setMobileOpen(false)}>
+                <Link to="/login" onClick={() => setMobileOpen(false)}>
                   <Button variant="outline" size="sm" className="w-full">Entrar</Button>
                 </Link>
               )}
-              <Link to="https://wa.me/message/3MPLPHHHKVZSP1" target="_blank" className="flex-1">
-                <Button size="sm" className="w-full gradient-primary text-primary-foreground border-0">
-                  Demonstração
-                </Button>
-              </Link>
             </div>
           </nav>
         </div>
